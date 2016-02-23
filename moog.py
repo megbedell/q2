@@ -2,6 +2,8 @@ import numpy as np
 import os
 import logging
 from config import *
+import pdb
+import multiprocessing as mp
 
 logger = logging.getLogger(__name__)
 
@@ -67,15 +69,20 @@ def create_model_in(Star, file_name='model.in'):
         feh = Star.feh_model
     else:
         feh = Star.feh
-
-    with open('head.tmp', 'w') as f:
+    
+    current = mp.current_process()
+    mod_id = current.pid  # generate an ID number for this calculation
+    head_file = 'head'+str(mod_id)+'.tmp'
+    body_file = 'body'+str(mod_id)+'.tmp'
+    tail_file = 'tail'+str(mod_id)+'.tmp'
+    with open(head_file, 'w') as f:
         f.write('KURUCZ\n')
         f.write('TEFF='+str(Star.teff)+',LOGG='+str(Star.logg)+
                 ',[FE/H]='+str(feh)+','+Star.model_atmosphere_grid+'\n')
         nd = len(Star.model_atmosphere['T'])
         f.write('ND=       '+str(nd)+'\n')
 
-    with open('body.tmp', 'w') as f:
+    with open(body_file, 'w') as f:
         for idx in range(nd):
             f.write("{0:.8E} {1:.1F} {2:.3E} {3:.3E} {4:.3E}\n".format(\
                     Star.model_atmosphere['RHOX'][idx],\
@@ -85,7 +92,7 @@ def create_model_in(Star, file_name='model.in'):
                     Star.model_atmosphere['ABROSS'][idx])
                    )
 
-    with open('tail.tmp', 'w') as f:
+    with open(tail_file, 'w') as f:
         f.write('%5.2F\n' %Star.vt)
         if Star.model_atmosphere_grid != 'marcs':
             path = os.path.join(MODATM_PATH, 'kurucz')
@@ -125,14 +132,14 @@ def create_model_in(Star, file_name='model.in'):
         f.write('  10108.0 60808.0\n')
         f.write('  6.1     7.1     8.1   12.1  22.1  26.1\n')
 
-    file_list = ['head.tmp', 'body.tmp', 'tail.tmp']
+    file_list = [head_file, body_file, tail_file]
     with open(file_name, 'w') as outfile:
         for one_file in file_list:
             with open(one_file) as infile:
                 outfile.write(infile.read())
     for one_file in file_list:
         os.unlink(one_file)
-    logger.info('Moog infile model atmosphere created: '+file_name)
+    logger.info('Moog infile model atmosphere created: '+file_name+' with calculation ID '+str(mod_id))
 
 
 def create_lines_in(Star, species=0, file_name='lines.in'):
@@ -195,19 +202,25 @@ def abfind(Star, species, species_id):
         MD.hfs_species = str(round(species))
     if not os.path.exists('.q2'):
         os.mkdir('.q2')
-    MD.standard_out = os.path.join('.q2', 'moog.std')
-    MD.summary_out = os.path.join('.q2', 'moog.sum')
-    MD.model_in = os.path.join('.q2', 'model.in')
-    MD.lines_in = os.path.join('.q2', 'lines.in')
-    MD.create_file('batch.par')
+    
+    current = mp.current_process()
+    run_id = current.pid # generate an ID number for this calculation
+
+    MD.standard_out = os.path.join('.q2', 'moog'+str(run_id)+'.std')
+    MD.summary_out = os.path.join('.q2', 'moog'+str(run_id)+'.sum')
+    MD.model_in = os.path.join('.q2', 'model'+str(run_id)+'.in')
+    MD.lines_in = os.path.join('.q2', 'lines'+str(run_id)+'.in')
+    batchfile = 'batch'+str(run_id)+'.par'
+    MD.create_file(file_name=batchfile)
 
     create_model_in(Star, file_name=MD.model_in)
     found_lines = create_lines_in(Star, species=species, file_name=MD.lines_in)
     if not found_lines:
         logger.warning('Did not run abfind (no lines found)')
         return False
-    logfile = os.path.join('.q2', 'moog.log')
-    os.system('MOOGSILENT > '+logfile+' 2>&1')
+    logfile = os.path.join('.q2', 'moog'+str(run_id)+'.log')
+    os.system('echo '+batchfile+' | MOOGSILENT > '+logfile+' 2>&1')
+
     f = open(MD.summary_out, 'r')
     line, stop = '', False
     while line[0:10] != 'wavelength':
@@ -249,13 +262,14 @@ def abfind(Star, species, species_id):
     os.unlink(MD.summary_out)
     os.unlink(MD.standard_out)
     os.unlink(logfile)
+    #os.unlink(batchfile)
     if os.path.isfile('fort.99'):
         os.unlink('fort.99')
 
     x = {'ww': np.array(ww), 'ep': np.array(ep), 'ew': np.array(ew),\
          'rew': np.array(rew), 'ab': np.array(ab), 'difab': np.array(difab)}
     setattr(Star, species_id, x)
-    logger.info('Successfully ran abfind')
+    logger.info('Successfully ran abfind with ID '+str(run_id))
     return True
 
 
