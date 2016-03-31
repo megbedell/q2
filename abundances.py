@@ -429,6 +429,62 @@ def getsp_ids(species_list):
             logger.warning('species_code '+str(species_code)+' not found')
     return species_ids
 
+tc_map = {
+          'LiI' :   1142.0,
+          'BeI' :   1452.0,
+          'BeII':   1452.0,
+          'BI'  :    908.0,
+          'CI'  :     40.0,
+          'CH'  :     40.0,
+          'NI'  :    123.0,
+          'OI'  :    180.0,
+          'FI'  :    734.0,
+          'NaI' :    958.0,
+          'MgI' :   1336.0,
+          'MgII':   1336.0,
+          'AlI' :   1653.0,
+          'SiI' :   1310.0,
+          'PI'  :   1229.0,
+          'SI'  :    664.0,
+          'KI'  :   1006.0,
+          'CaI' :   1517.0,
+          'ScI' :   1659.0,
+          'ScII':   1659.0,
+          'TiI' :   1582.0,
+          'TiII':   1582.0,
+          'VI'  :   1429.0,
+          'CrI' :   1296.0,
+          'CrII':   1296.0,
+          'MnI' :   1158.0,
+          'FeI' :   1334.0,
+          'FeII':   1334.0,
+          'CoI' :   1352.0,
+          'NiI' :   1353.0,
+          'CuI' :   1037.0,
+          'ZnI' :    726.0,
+          'RbI' :    800.0,
+          'SrI' :   1464.0,
+          'SrII':   1464.0,
+          'YII' :   1659.0,
+          'ZrII':   1741.0,
+          'BaII':   1455.0,
+          'LaII':   1578.0,
+          'CeII':   1478.0,
+          'NdII':   1602.0,
+          'SmII':   1590.0,
+          'EuII':   1356.0,
+          'DyII':   1659.0
+          }
+
+def gettc(species_id):
+    # return 50% solar system gas condensation temperature from Table 8 of Lodders (2003)
+    try:
+        tc = tc_map[species_id]
+    except:
+        logger.warning('species id not recognized: '+species_id)
+        return None
+    return tc
+
 
 def nlte_triplet(teff, logg, feh, ao, silent=True):
     if feh >= 0.4:
