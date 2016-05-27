@@ -38,4 +38,5 @@ Contact info
 ------------
 
 Ivan Ramirez (ivan@astro.as.utexas.edu)
+
 Megan Bedell (mbedell@oddjob.uchicago.edu)
