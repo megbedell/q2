@@ -138,6 +138,10 @@ def get_stats(pdf_x, pdf_y_smooth):
 def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
     '''Calculates most likely parameters of Star using isochrone points
     '''
+    if hasattr(Star, 'feh_model'):
+        Star.old_feh = Star.feh
+        Star.feh = getattr(Star, 'feh_model')
+
     if not isochrone_points:
         ips = get_isochrone_points(Star, SolvePars.feh_offset,
                                    SolvePars.get_isochrone_points_db,
@@ -190,7 +194,7 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
       pdf(pdf_mass_x, ips, prob, 'mass', SolvePars.smooth_window_len_mass)
 
     #luminosity
-    logls = -1.0+np.arange(401)*0.01
+    logls = -2.0+np.arange(501)*0.01
     pdf_logl_x = logls[np.logical_and(logls >= min(ips['logl'])-0.02,
                                       logls <= max(ips['logl'])+0.02)]
     pdf_logl_y, pdf_logl_y_smooth, Star.isologl = \
@@ -225,12 +229,15 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
         pdf_logg_y, pdf_logg_y_smooth, Star.isologg = \
           pdf(pdf_logg_x, ips, prob, 'logg', SolvePars.smooth_window_len_logg)
 
-    if Star.isoage:
+    if Star.isoage and Star.isoage['most_probable'] != None:
         age_ni = round(Star.isoage['most_probable'], 2)
         feh_ni = round(ips['feh'][abs(ips['feh'] - Star.feh) == \
                                   min(abs(ips['feh'] - Star.feh))][0], 2)
         niso = get_isochrone(age_ni, feh_ni, SolvePars.get_isochrone_points_db)
         Star.nearest_isochrone = niso
+
+    if hasattr(Star, 'feh_model'):
+        Star.feh = Star.old_feh
 
     if not PlotPars.make_figures:
         return
@@ -397,6 +404,8 @@ def solve_all(Data, SolvePars, PlotPars, output_file, isochrone_points=None):
         print '*'*len(star_id)
         s = Star(star_id)
         s.get_data_from(Data)
+        if hasattr(s, 'feh_model'):
+            s.feh = getattr(s, 'feh_model')
         try:
             ips = None
             if isochrone_points:
