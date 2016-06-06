@@ -9,8 +9,6 @@ from star import Star
 import datetime
 from scipy import ma
 from collections import OrderedDict
-from bokeh.plotting import *
-from bokeh.models import HoverTool
 
 logger = logging.getLogger(__name__)
 
@@ -524,80 +522,3 @@ def make_single_solution_table(solution_files, single_solution_file):
                         #fout.write(line2w+'\n')
                         fout.write(line2)
     fout.close()
-
-
-def fancy_ironstats_plot(Star):
-    """Makes bokeh hover-ing plots
-    
-    Function written to look for outliers and investigate line-to-line scatter
-    """
-    if not hasattr(Star, 'iron_stats'):
-        logger.error('Star object ('+Star.name+') has no ironstats attribute.')
-        return None
-    ww = np.concatenate((Star.fe1['ww'], Star.fe2['ww']))
-    ep = np.concatenate((Star.fe1['ep'], Star.fe2['ep']))
-    ew = np.concatenate((Star.fe1['ew'], Star.fe2['ew']))
-    rew = np.concatenate((Star.fe1['rew'], Star.fe2['rew']))
-    if Star.iron_stats['reference']:
-        ab = np.concatenate((Star.fe1['difab'], Star.fe2['difab']))
-        y_axis_label = '[Fe/H]'
-    else:
-        ab = np.concatenate((Star.fe1['ab'], Star.fe2['ab']))
-        y_axis_label = 'A(Fe)'
-    ws = [str(round(w, 1)) for w in ww]
-    colors = np.concatenate((["blue"]*len(Star.fe1['ww']),
-                             ["green"]*len(Star.fe2['ww'])))
-
-    TOOLS="pan,wheel_zoom,box_zoom,reset,hover"
-    output_notebook()
-
-    title = Star.name
-    if getattr(Star, 'iron_stats')['reference']:
-        title += ' - '+getattr(Star, 'iron_stats')['reference']
-
-    p1 = figure(title=title, plot_width=650, plot_height=300,
-                x_axis_label='EP (eV)',
-                y_axis_label=y_axis_label,
-                tools=TOOLS)
-
-    abst = [str(round(xab, 3)) for xab in ab]
-    source = ColumnDataSource(
-        data=dict(
-            ws = ws,
-            ep = ep,
-            rew = rew,
-            ab = ab,
-            abst = abst,
-            ew = ew,
-            colors = colors,
-        )
-    )
-
-    p1.scatter('ep', 'ab', size=10, color='colors',
-            source=source, marker='square')
-
-    hover = p1.select(dict(type=HoverTool))
-    hover.tooltips = OrderedDict([
-        ("Wavelength, EP", "@ws A, @ep eV"),
-        ("EW, REW", "@ew mA, @rew"),
-        ("Abundance", "@abst"),
-    ])
-
-    show(p1)
-
-    p2 = figure(title='', plot_width=650, plot_height=300,
-                x_axis_label='REW',
-                y_axis_label=y_axis_label,
-                tools=TOOLS)
-
-    p2.scatter('rew', 'ab', size=10, color='colors',
-            source=source, marker='square')
-
-    hover = p2.select(dict(type=HoverTool))
-    hover.tooltips = OrderedDict([
-        ("Wavelength, EP", "@ws A, @ep eV"),
-        ("EW, REW", "@ew mA, @rew"),
-        ("Abundance", "@abst"),
-    ])
-
-    show(p2)

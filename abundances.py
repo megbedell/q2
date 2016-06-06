@@ -8,8 +8,6 @@ import os
 from config import *
 from tools import read_csv
 from collections import OrderedDict
-from bokeh.plotting import *
-from bokeh.models import HoverTool
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +161,7 @@ def one(Star, species_ids=None, Ref=object, silent=True, errors=False):
             logger.warning('Not doing calculations for: '+species_id)
             continue
         logger.info('Working on: '+species_id)
-        moog.abfind(Star, species, species_id)
+        setattr(Star, species_id, moog.abfind(Star, species, species_id))
         if not hasattr(Star, species_id):
             logger.warning('Did not calculate '+species_id+' abundances')
             continue
@@ -191,7 +189,8 @@ def one(Star, species_ids=None, Ref=object, silent=True, errors=False):
                 Ref = Star
             if not hasattr(Ref, species_id):
                 logger.info('Calculating reference star abundances: '+Ref.name)
-                moog.abfind(Ref, species, species_id)
+                setattr(Ref, species_id, moog.abfind(Ref, species, species_id))
+                
 
                 if species_id == 'OI':
                     if not silent:
@@ -578,82 +577,3 @@ def nlte_triplet(teff, logg, feh, ao, silent=True):
               format(np.mean(aon), np.std(aon))
 
     return aon
-
-def fancy_abund_plot(Star, species_id):
-    """Makes bokeh hover-ing plots
-    
-    Function written to look for outliers and investigate line-to-line scatter
-    """
-    if not hasattr(Star, species_id):
-        logger.error('Star object ('+Star.name+') has no '\
-                     +species_id+'attribute.')
-        return None
-    ww = getattr(Star, species_id)['ww']
-    ew = getattr(Star, species_id)['ew']
-    ab = getattr(Star, species_id)['ab']
-    difab = getattr(Star, species_id)['difab']
-
-    TOOLS="pan,wheel_zoom,box_zoom,reset,hover"
-    output_notebook()
-
-    p1 = figure(title=Star.name, plot_width=650, plot_height=300,
-                x_axis_label='Wavelength (A)',
-                y_axis_label='A('+species_id+')',
-                tools=TOOLS)
-
-    ws = [str(round(w, 1)) for w in ww]
-
-    source = ColumnDataSource(
-        data=dict(
-            ww = ww,
-            ws = ws,
-            ew = ew,
-            ab = ab,
-            difab = difab,
-        )
-    )
-
-    p1.scatter('ww', 'ab', size=10, source=source, marker='square',
-               color='blue')
-
-    hover = p1.select(dict(type=HoverTool))
-    hover.tooltips = OrderedDict([
-        ("Wavelength", "@ws A"),
-        ("EW", "@ew mA"),
-        ("Abundance", "@ab"),
-    ])
-
-    show(p1)
-
-    if getattr(Star, species_id)['ref']:
-        difab = np.array(difab, dtype=np.float) #convert None to np.nan
-        difabs = [str(round(dfab, 3)) for dfab in difab]
-        source = ColumnDataSource(
-            data=dict(
-                ww = ww,
-                ws = ws,
-                ew = ew,
-                ab = ab,
-                difab = difab,
-                difabs = difabs,
-            )
-        )
-
-        p2 = figure(title=Star.name+' - '+getattr(Star, species_id)['ref'],
-                    plot_width=650, plot_height=300,
-                    x_axis_label='Wavelength (A)',
-                    y_axis_label='['+species_id+'/H]',
-                    tools=TOOLS
-                    )
-
-        p2.scatter('ww', 'difab', size=10, source=source, marker='square',
-                   color='blue')
-
-        hover = p2.select(dict(type=HoverTool))
-        hover.tooltips = OrderedDict([
-            ("Wavelength", "@ws A"),
-            ("EW", "@ew mA"),
-            ("Abundance", "@difabs"),
-        ])
-
-        show(p2)
