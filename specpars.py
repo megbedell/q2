@@ -52,9 +52,9 @@ def iron_stats(Star, Ref=object, plot=None, PlotPars=object, silent=True):
             return None
     logger.info('Begin iron_stats for '+Star.name)
     logger.info('Calculating abundances for '+Star.name)
-    fe1_done = moog.abfind(Star, 26.0, 'fe1')
-    fe2_done = moog.abfind(Star, 26.1, 'fe2')
-    if not fe1_done and not fe2_done:
+    setattr(Star, 'fe1', moog.abfind(Star, 26.0, 'fe1'))
+    setattr(Star, 'fe2', moog.abfind(Star, 26.1, 'fe2'))
+    if not hasattr(Star, 'fe1') and not hasattr(Star, 'fe2'):
         logger.warning('No fe1/fe2 attribute(s) added to '+Star.name)
         return None
     if hasattr(Ref, 'name'):
@@ -63,8 +63,8 @@ def iron_stats(Star, Ref=object, plot=None, PlotPars=object, silent=True):
             logger.info('Reference star does not have abundances as '+\
                         'attributes')
             logger.info('Calculating abundances for reference star')
-            moog.abfind(Ref, 26.0, 'fe1')
-            moog.abfind(Ref, 26.1, 'fe2')
+            setattr(Ref, 'fe1', moog.abfind(Ref, 26.0, 'fe1'))
+            setattr(Ref, 'fe2', moog.abfind(Ref, 26.1, 'fe2'))
         ww1, ww2 = Star.fe1['ww'], Star.fe2['ww']
         ww1r, ww2r = Ref.fe1['ww'], Ref.fe2['ww']
         w1, w2 = np.intersect1d(ww1, ww1r), np.intersect1d(ww2, ww2r)

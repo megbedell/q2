@@ -189,6 +189,7 @@ def abfind(Star, species, species_id):
     Star is a star object; must have all attributes in place
     species could be 26.0 for Fe I, for example
     species_id is a string that will become a new attribute for the Star object
+    ** returns a dict object with abundance information
     Example: abfind(s, 26.1, 'fe2')
     s.fe2 #shows result from abfind
     MD is the moog driver object
@@ -267,10 +268,9 @@ def abfind(Star, species, species_id):
         os.unlink('fort.99')
 
     x = {'ww': np.array(ww), 'ep': np.array(ep), 'ew': np.array(ew),\
-         'rew': np.array(rew), 'ab': np.array(ab), 'difab': np.array(difab)}
-    setattr(Star, species_id, x)
+    'rew': np.array(rew), 'ab': np.array(ab), 'difab': np.array(difab)}
     logger.info('Successfully ran abfind with ID '+str(run_id))
-    return True
+    return x
 
 
 def cog(Star, species, cog_id):
