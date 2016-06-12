@@ -121,7 +121,6 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
         if not silent:
 	        print "GCE correction of {0:6.3} dex made.".format(-corr_factor)
 
-    
     for t in set(Tc):
          ind = np.where(Tc == t)[0]
          if len(ind) == 2:  #assumes there's only one other state

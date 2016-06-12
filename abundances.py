@@ -464,7 +464,7 @@ tc_map = {
           'RbI' :    800.0,
           'SrI' :   1464.0,
           'SrII':   1464.0,
-          'YII' :   1659.0,
+          'YII' :   1659.0001,  # so it's not the same as Sc & Dy
           'ZrII':   1741.0,
           'BaII':   1455.0,
           'LaII':   1578.0,
@@ -472,7 +472,7 @@ tc_map = {
           'NdII':   1602.0,
           'SmII':   1590.0,
           'EuII':   1356.0,
-          'DyII':   1659.0
+          'DyII':   1659.0002  # so it's not the same as Sc & Y
           }
 
 def gettc(species_id):
