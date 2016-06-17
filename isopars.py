@@ -42,7 +42,7 @@ class PlotPars:
         self.make_age_plot = False
         self.make_nearest_plot = False
 
-def pdf(pdf_x, ips, prob, par, smooth_window_len):
+def pdf(pdf_x, ips, prob, par, smooth_window_len, silent=False):
     '''Calculates a probability distribution function (PDF) for parameter par
     given the x-values for the PDF, the isochrone points ips, and their 
     probability. Return PDF and smoothed PDF (using smooth_window_len) if
@@ -66,21 +66,22 @@ def pdf(pdf_x, ips, prob, par, smooth_window_len):
 
     stats = get_stats(pdf_x, pdf_y_smooth)
 
-    if stats['most_probable'] is not None:
-        print "{0:10s}   {1:6.3f} | {2:6.3f} - {3:6.3f} | "\
-              "{4:6.3f} - {5:6.3f} | {6:6.3f} +/- {7:6.3f}"\
-              .format(par,
-                      stats['most_probable'],
-                      stats['lower_limit_1sigma'],
-                      stats['upper_limit_1sigma'],
-                      stats['lower_limit_2sigma'],
-                      stats['upper_limit_2sigma'],
-                      stats['mean'], stats['std'])
-    else:
-        print "{0:10s}          |        -        |  "\
-              "      -        | {1:6.3f} +/- {2:6.3f}"\
-              .format(par, stats['mean'], stats['std'])
-        logger.warning("--- Unable to calculate PDF stats for "+par)
+    if not(silent):
+        if stats['most_probable'] is not None:
+            print "{0:10s}   {1:6.3f} | {2:6.3f} - {3:6.3f} | "\
+                  "{4:6.3f} - {5:6.3f} | {6:6.3f} +/- {7:6.3f}"\
+                  .format(par,
+                          stats['most_probable'],
+                          stats['lower_limit_1sigma'],
+                          stats['upper_limit_1sigma'],
+                          stats['lower_limit_2sigma'],
+                          stats['upper_limit_2sigma'],
+                          stats['mean'], stats['std'])
+        else:
+            print "{0:10s}          |        -        |  "\
+                  "      -        | {1:6.3f} +/- {2:6.3f}"\
+                  .format(par, stats['mean'], stats['std'])
+            logger.warning("--- Unable to calculate PDF stats for "+par)
 
     return pdf_y, pdf_y_smooth, stats
 
@@ -135,7 +136,7 @@ def get_stats(pdf_x, pdf_y_smooth):
 
     return stats
 
-def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
+def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None, silent=False):
     '''Calculates most likely parameters of Star using isochrone points
     '''
     if hasattr(Star, 'feh_model'):
@@ -153,9 +154,10 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
     if ips == None:
         logger.warning('Could not get any isochrone points.')
         return None
-    print 'Using {0} isochrone points\n'.format(len(ips['age']))
-    print 'Parameter      m.p. |  1-sigma range  |  2-sigma range  |   mean +/-  stdev'
-    print '----------   ------ | --------------- | --------------- | -----------------'
+    if not silent:
+        print 'Using {0} isochrone points\n'.format(len(ips['age']))
+        print 'Parameter      m.p. |  1-sigma range  |  2-sigma range  |   mean +/-  stdev'
+        print '----------   ------ | --------------- | --------------- | -----------------'
     logger.info('Using {0} Y2 isochrone points'.format(len(ips['age'])))
     Star.isokeyparameterknown = SolvePars.key_parameter_known
     Star.isonpoints = len(ips['age'])
@@ -182,7 +184,7 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
     pdf_age_x = ages[np.logical_and(ages >= min(ips['age'])-0.2,
                                    ages <= max(ips['age'])+0.2)]
     pdf_age_y, pdf_age_y_smooth, Star.isoage = \
-      pdf(pdf_age_x, ips, prob, 'age', SolvePars.smooth_window_len_age)
+      pdf(pdf_age_x, ips, prob, 'age', SolvePars.smooth_window_len_age, silent=silent)
     Star.pdf_age = {'x': pdf_age_x, 'y': pdf_age_y, 'ys': pdf_age_y_smooth}
 
     #mass
@@ -191,21 +193,21 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
     pdf_mass_x = masses[np.logical_and(masses >= min(ips['mass'])-0.02,
                                        masses <= max(ips['mass'])+0.02)]
     pdf_mass_y, pdf_mass_y_smooth, Star.isomass = \
-      pdf(pdf_mass_x, ips, prob, 'mass', SolvePars.smooth_window_len_mass)
+      pdf(pdf_mass_x, ips, prob, 'mass', SolvePars.smooth_window_len_mass, silent=silent)
 
     #luminosity
     logls = -2.0+np.arange(501)*0.01
     pdf_logl_x = logls[np.logical_and(logls >= min(ips['logl'])-0.02,
                                       logls <= max(ips['logl'])+0.02)]
     pdf_logl_y, pdf_logl_y_smooth, Star.isologl = \
-      pdf(pdf_logl_x, ips, prob, 'logl', SolvePars.smooth_window_len_logl)
+      pdf(pdf_logl_x, ips, prob, 'logl', SolvePars.smooth_window_len_logl, silent=silent)
 
     #absolute magnitude
     mvs = -3.0+np.arange(1601)*0.01
     pdf_mv_x = mvs[np.logical_and(mvs >= min(ips['mv'])-0.02,
                                   mvs <= max(ips['mv'])+0.02)]
     pdf_mv_y, pdf_mv_y_smooth, Star.isomv = \
-      pdf(pdf_mv_x, ips, prob, 'mv', SolvePars.smooth_window_len_mv)
+      pdf(pdf_mv_x, ips, prob, 'mv', SolvePars.smooth_window_len_mv, silent=silent)
 
     #radius
     #rs = 0.4+np.arange(1211)*0.01
@@ -214,7 +216,7 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None):
                                 rs <= max(ips['r'])+0.02)]
     try:
         pdf_r_y, pdf_r_y_smooth, Star.isor = \
-          pdf(pdf_r_x, ips, prob, 'r', SolvePars.smooth_window_len_r)
+          pdf(pdf_r_x, ips, prob, 'r', SolvePars.smooth_window_len_r, silent=silent)
     except:
         logger.warning('Could not determine radius.')
         pdf_r_x = None
