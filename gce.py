@@ -2,7 +2,6 @@ import numpy as np
 import q2
 import pdb
 import matplotlib.pyplot as plt
-import mpfit
 
 b_map = {
           'CI'  :   16.3,
@@ -71,20 +70,7 @@ def getc(species_id):
         return np.inf
     return c
 
-
-def linear(p, fjac=None, x=None, y=None, err=None):
-     m,b = (p[0],p[1])
-     model = m*x + b
-     status = 0
-     return([status, (y-model)/err])
-     
-def linbreak(p, fjac=None, x=None, y=None, err=None):
-     m,offs,bk=(p[0],p[1],p[2])
-     model = np.piecewise(x, [x < bk, x >= bk], [offs, lambda x: (offs + m*(x - bk))])
-     status = 0
-     return([status, (y-model)/err])
-
-def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, errors=False, Tc_fit=True):
+def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, errors=False):
     if (hasattr(Ref, 'name') and Ref_age == 0.0):
     	print "Ref_age keyword must be set!"
     	return None
@@ -128,22 +114,7 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
              abund = np.delete(abund, ind[1])
              err = np.delete(err, ind[1])
              Tc = np.delete(Tc, ind[1])
-             
-    if Tc_fit:
-        err[7] = 0.05
-        parinfo = [{'value':0., 'fixed':0, 'limited':[0,0], 'limits':[0.,0.]} for i in range(2)]
-        parinfo[0]['value'] = 2.0e-5
-        parinfo[1]['value'] = 6.0e-2
-        parinfo[0]['step'] = 1.0e-6
-        parinfo[1]['step'] = 5.0e-3
-
-        fa = {'x':Tc, 'y':abund, 'err':err}
-        m = mpfit.mpfit(linear, parinfo=parinfo, functkw=fa)
-        print 'status = ', m.status
-        if (m.status <= 0): print 'error message = ', m.errmsg
-        print 'slope = {0:.2e} +/- {1:.2e}'.format(m.params[0],m.perror[0])
-        print 'offset = {0:.2e} +/- {1:.2e}'.format(m.params[1],m.perror[1])
-    
+              
     return abund, err, Tc
     
     
