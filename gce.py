@@ -34,7 +34,7 @@ def getb(species_id):
         b = b_map[species_id]
     except:
         #logger.warning('no GCE correction available for: '+species_id)
-        return None
+        return 0.0
     return b
 
 
@@ -68,7 +68,7 @@ def getc(species_id):
         c = c_map[species_id]
     except:
         #logger.warning('no GCE correction available for: '+species_id)
-        return None
+        return np.inf
     return c
 
 
@@ -121,7 +121,6 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
         if not silent:
 	        print "GCE correction of {0:6.3} dex made.".format(-corr_factor)
 
-    
     for t in set(Tc):
          ind = np.where(Tc == t)[0]
          if len(ind) == 2:  #assumes there's only one other state
