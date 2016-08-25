@@ -71,9 +71,12 @@ def getc(species_id):
     return c
 
 def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, errors=False):
-    if (hasattr(Ref, 'name') and Ref_age == 0.0):
-    	print "Ref_age keyword must be set!"
-    	return None
+    if (Ref==None):
+    	print "Ref not set; assuming it is the Sun (age = 5.4 Gyr)"
+        Ref_age = 5.4
+    if (Ref_age==0.0):
+        "Must set Ref_age keyword!"
+        return None
     if species_ids == None:
         species_codes = sorted(set(Star.linelist['species']))
         species_ids = q2.abundances.getsp_ids(species_codes)
@@ -98,7 +101,7 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
         # make GCE correction:
         species_b = getb(species_id)
         species_c = getc(species_id)
-        if (species_b == None or species_c == None):
+        if not np.isfinite(species_c):
 	        if not silent:
 		        print "No GCE correction available."
 	        continue
