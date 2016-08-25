@@ -21,6 +21,7 @@ import yypars
 import isopars
 import isopars_test
 import logging
+import gce
 
 logger = logging.getLogger(__name__)
 

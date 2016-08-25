@@ -180,7 +180,7 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None, silen
                           (1.414214*Star.err_feh))**2)
 
     #age
-    ages = 0.1+np.arange(150)*0.1
+    ages = 0.1+np.arange(200)*0.1
     pdf_age_x = ages[np.logical_and(ages >= min(ips['age'])-0.2,
                                    ages <= max(ips['age'])+0.2)]
     pdf_age_y, pdf_age_y_smooth, Star.isoage = \
@@ -211,7 +211,11 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None, silen
 
     #radius
     #rs = 0.4+np.arange(1211)*0.01
+<<<<<<< HEAD
     rs = 0.4+np.arange(2421)*0.005
+=======
+    rs = np.arange(0.4, 12.5, 0.01)
+>>>>>>> upstream/master
     pdf_r_x = rs[np.logical_and(rs >= min(ips['r'])-0.02,
                                 rs <= max(ips['r'])+0.02)]
     try:
@@ -462,7 +466,12 @@ def get_isochrone_points(Star, feh_offset=0, db='yy02.sql3', nsigma=5, \
     You can apply an feh_offset that will shift the search box and then be
     applied to the [Fe/H] values of the isochrone points selected.
     '''
-    conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+    if os.path.exists(db):
+        conn = sqlite3.connect(db)
+        logger.info('Using isochrone database in local folder')
+    else:
+        conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+        logger.info('Using isochrone database in q2/Data')
     conn.row_factory = sqlite3.Row
     logtm = np.log10(Star.teff-nsigma*Star.err_teff)
     logtp = np.log10(Star.teff+nsigma*Star.err_teff)
@@ -530,7 +539,13 @@ def get_all_isochrone_points(db='yy02.sql3', teff=None, logg=None, feh=None):
     are provided, it restricts the isochrone points to the box defined by those
     edges.
     '''
-    conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+    if os.path.exists(db):
+        conn = sqlite3.connect(db)
+        logger.info('Using isochrone database in local folder')
+    else:
+        conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+        logger.info('Using isochrone database in q2/Data')
+
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
@@ -665,7 +680,13 @@ def smooth(x, window_len=11, window='hanning'):
     return y[(window_len/2):-(window_len/2)]
 
 def get_isochrone(age, feh, db='yy02.sql3'):
-    conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+    if os.path.exists(db):
+        conn = sqlite3.connect(db)
+        logger.info('Using isochrone database in local folder')
+    else:
+        conn = sqlite3.connect(os.path.join(ISOCHRONES_PATH, db))
+        logger.info('Using isochrone database in q2/Data')
+
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     x = c.execute('SELECT mass, logt, logl, logg, mv '         +\
