@@ -66,6 +66,7 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
         species_difab = species_difab[species_difab != np.array(None)]  #remove Nones from where ref star was unavailable
         abund = np.append(abund, np.mean(species_difab))
         err = np.append(err, np.std(species_difab) / np.sqrt(len(species_difab) - 1) )
+    
     for t in set(Tc):
         # eliminate duplicate measurements of the same element
         ind = np.where(Tc == t)[0]
@@ -74,7 +75,9 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
             abund = np.delete(abund, ind[1])
             err = np.delete(err, ind[1])
             Tc = np.delete(Tc, ind[1])
-    for species_id in species_ids:
+            species_ids = np.delete(species_ids[1])
+
+    for i,species_id in enumerate(species_ids):
         # make corrections
         if not silent:
             print "*** Begin "+species_id+":"
@@ -85,10 +88,10 @@ def correct(Star, age, species_ids=None, Ref=None, Ref_age=0.0, silent=True, err
 		        print "No GCE correction available."
 	        continue
         corr_factor = (age - Ref_age)*b*1e-2
-        abund[-1] -= corr_factor
+        abund[i] -= corr_factor
         # adjust abundance error:
         err_factor = (age - Ref_age)*err_b*1e-2
-        err = np.sqrt(err**2 + err_factor**2)
+        err[i] = np.sqrt(err[i]**2 + err_factor**2)
         if not silent:
 	        print "GCE correction of {0:6.3} +/- {1:6.3} dex made.".format(-corr_factor, np.abs(err_factor))
 
