@@ -211,11 +211,8 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None, silen
 
     #radius
     #rs = 0.4+np.arange(1211)*0.01
-<<<<<<< HEAD
-    rs = 0.4+np.arange(2421)*0.005
-=======
+    #rs = 0.4+np.arange(2421)*0.005
     rs = np.arange(0.4, 12.5, 0.01)
->>>>>>> upstream/master
     pdf_r_x = rs[np.logical_and(rs >= min(ips['r'])-0.02,
                                 rs <= max(ips['r'])+0.02)]
     try:
