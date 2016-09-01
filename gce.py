@@ -38,6 +38,7 @@ def getb_linear(species_id):
 
 
 k_map_hyperbolic = {
+# [Gyr]
           'CI'  :   16.3,
           'CH'  :   16.3,
           'OI'  :   48.0,
@@ -71,6 +72,7 @@ def getk_hyperbolic(species_id):
 
 
 b_map_hyperbolic = {
+# [Gyr/dex]
           'CI'  :   22.8,
           'CH'  :   22.8,
           'OI'  :   45.8,
@@ -95,7 +97,11 @@ b_map_hyperbolic = {
           'ZnI' :   11.4
           }
 
+<<<<<<< HEAD
 def getb_hyperbolic(species_id):
+=======
+def getc_hyperbolic(species_id):
+>>>>>>> eac9fe39e5eda7928cdca1b1ff6d90054b761844
     try:
         b = b_map_hyperbolic[species_id]
     except:
