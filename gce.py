@@ -97,11 +97,7 @@ b_map_hyperbolic = {
           'ZnI' :   11.4
           }
 
-<<<<<<< HEAD
 def getb_hyperbolic(species_id):
-=======
-def getc_hyperbolic(species_id):
->>>>>>> eac9fe39e5eda7928cdca1b1ff6d90054b761844
     try:
         b = b_map_hyperbolic[species_id]
     except:
