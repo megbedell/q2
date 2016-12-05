@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 
 b_map_linear = {
 # slope correction factor and error [dex/Gyr]
-          'CI'  :   (0.030,0.003),
-          'CH'  :   (0.030,0.003),
+# from: Spina et al. (2016a), A&A 593, A125
+          'CI'  :   (0.019,0.003),
+          'CH'  :   (0.019,0.003),
           'OI'  :   (0.016,0.002),
           'NaI' :   (0.015,0.003),
           'MgI' :   (0.010,0.0009),
@@ -169,13 +170,13 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
         elif method is 'hyperbolic':
             k = getk_hyperbolic(species_id)
             b = getb_hyperbolic(species_id)
-            if not np.isfinite(c):
+            if not np.isfinite(b):
     	        if not silent:
     		        print "No GCE correction available."
                 corr_factor = 0.0
                 err_factor = 0.0
     	        continue
-            corr_factor = np.sqrt((age - k)**2/b**2 + 1.0) - np.sqrt((Ref_age - k)**2/b**2 + 1.0)
+            corr_factor = np.sqrt((Ref_age - k)**2/b**2 + 1.0) - np.sqrt((age - k)**2/b**2 + 1.0)
             err_factor = 0.0 # no errors available (yet)
         else:
             print "Correction method not recognized; no changes made."
