@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def all(Data, output_file, species_ids=None, reference=None, grid='odfnew',
-        errors=False):
+        errors=False, nlte=True):
     print '------------------------------------------------------'
     print 'Initializing ...'
     start_time = datetime.datetime.now()
@@ -70,7 +70,7 @@ def all(Data, output_file, species_ids=None, reference=None, grid='odfnew',
             fout.write(line+'\n')
             continue
         print 'Using [Fe/H] = {0:6.3f} for the model atmosphere'.format(s.feh)
-        one(s, species_ids, ref, errors=errors)
+        one(s, species_ids, ref, errors=errors, nlte=nlte)
         for species_id in species_ids:
             print '\n'+species_id+'\n'+'-'*len(species_id)
             if not hasattr(s, species_id):
@@ -143,7 +143,7 @@ def all(Data, output_file, species_ids=None, reference=None, grid='odfnew',
     print ''
 
 
-def one(Star, species_ids=None, Ref=object, silent=True, errors=False):
+def one(Star, species_ids=None, Ref=object, silent=True, errors=False, nlte=True):
     logger.info('Working on: '+Star.name)
     if species_ids == None:
         species_codes = sorted(set(Star.linelist['species']))
@@ -166,7 +166,7 @@ def one(Star, species_ids=None, Ref=object, silent=True, errors=False):
             logger.warning('Did not calculate '+species_id+' abundances')
             continue
 
-        if species_id == 'OI':
+        if (species_id == 'OI') & nlte:
             if not silent:
                 print '777 nm oxygen abundances will be NLTE corrected'
             ao = []
@@ -192,7 +192,7 @@ def one(Star, species_ids=None, Ref=object, silent=True, errors=False):
                 setattr(Ref, species_id, moog.abfind(Ref, species, species_id))
                 
 
-                if species_id == 'OI':
+                if (species_id == 'OI') & nlte:
                     if not silent:
                         print '777 nm oxygen abundances will be NLTE '\
                               +'corrected (Reference)'
