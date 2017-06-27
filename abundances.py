@@ -161,10 +161,12 @@ def one(Star, species_ids=None, Ref=object, silent=True, errors=False, nlte=True
             logger.warning('Not doing calculations for: '+species_id)
             continue
         logger.info('Working on: '+species_id)
-        setattr(Star, species_id, moog.abfind(Star, species, species_id))
-        if not hasattr(Star, species_id):
+        ab = moog.abfind(Star, species, species_id)
+        if ab:
+            setattr(Star, species_id, ab)
+        else:            
             logger.warning('Did not calculate '+species_id+' abundances')
-            continue
+            continue            
 
         if (species_id == 'OI') & nlte:
             if not silent:
@@ -369,7 +371,9 @@ sp_map = {
           'BeII':   4.1,
           'BI'  :   5.0,
           'CI'  :   6.0,
+          'CI2' :   6.1,
           'CH'  : 106.0,
+          'CH2' : 106.1,
           'NI'  :   7.0,
           'OI'  :   8.0,
           'FI'  :   9.0,
@@ -435,6 +439,8 @@ tc_map = {
           'BI'  :    908.0,
           'CI'  :     40.0,
           'CH'  :     40.0,
+          'CI2'  :    40.0,
+          'CH2'  :    40.0,
           'NI'  :    123.0,
           'OI'  :    180.0,
           'FI'  :    734.0,
