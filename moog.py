@@ -1,9 +1,9 @@
 import numpy as np
 import os
 import logging
-from config import *
 import pdb
 import multiprocessing as mp
+from .config import *
 
 logger = logging.getLogger(__name__)
 
@@ -148,11 +148,11 @@ def create_lines_in(Star, species=0, file_name='lines.in'):
     """Creates a line list file for MOOG"""
     if species > 0:
         idx = np.where(np.logical_and(Star.linelist['species'] == species,\
-                                       Star.linelist['ew'] >= 0))[0]
+                                      np.not_equal(Star.linelist['ew'],\
+                                                   None)))[0]
     else:
         #species = 0 means all species
-        idx = np.where(np.logical_and(Star.linelist['species'] > species,\
-                                       Star.linelist['ew'] >= 0))[0]
+        idx = np.where(np.not_equal(Star.linelist['ew'], None))[0]
 
     nlines = len(idx)
     if nlines == 0:
@@ -161,12 +161,12 @@ def create_lines_in(Star, species=0, file_name='lines.in'):
     else:
         logger.info(str(nlines)+' lines found for '+Star.name)
     gf_values = Star.linelist['gf'][idx]
-    gf10 = [10**gfx for gfx in Star.linelist['gf'][idx] if gfx >= 0]
-    if len(gf10) == len(Star.linelist['gf'][idx]):
-        logger.info('all gf values for this species are positive --> 10^gf')
-        #gf_values = gf10
-        Star.linelist['gf'][idx] = gf10
-    #Star.linelist['gf'][idx] = gf_values
+    #gf10 = [10**gfx for gfx in Star.linelist['gf'][idx] if gfx >= 0]
+    #if len(gf10) == len(Star.linelist['gf'][idx]):
+    #    logger.info('all gf values for this species are positive --> 10^gf')
+    #    #gf_values = gf10
+    #    Star.linelist['gf'][idx] = gf10
+    ##Star.linelist['gf'][idx] = gf_values
 
     with open(file_name, 'w') as f:
         f.write("MOOG linelist created by q2\n")
@@ -187,7 +187,7 @@ def create_lines_in(Star, species=0, file_name='lines.in'):
 
 def abfind(Star, species, species_id):
     """Runs MOOG with abfind driver for a given Star and species
-    
+
     Star is a star object; must have all attributes in place
     species could be 26.0 for Fe I, for example
     species_id is a string that will become a new attribute for the Star object

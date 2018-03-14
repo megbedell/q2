@@ -1,8 +1,8 @@
 import numpy as np
 import logging
-import modatm
-from config import *
-from tools import read_csv
+from . import modatm
+from .config import *
+from .tools import read_csv
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ class Star:
             return None
 
         parameters = ['teff', 'err_teff', 'logg', 'err_logg',
-                      'feh', 'err_feh', 'vt', 'err_vt',
+                      'feh', 'err_feh', 'vt', 'err_vt', 'rho', 'err_rho',
                       'v', 'err_v', 'plx', 'err_plx', 'converged', 'feh_model']
         msg = []
         for par in parameters:
@@ -136,7 +136,7 @@ class Star:
         # gets line data excluding cells with no ew:
         #if hasattr(Data, 'lines'):
         if Data.lines:
-            idx = np.where(Data.lines[self.name] >= 0)
+            idx = np.where(Data.lines[self.name] != np.nan)
             self.linelist = {'wavelength': Data.lines['wavelength'][idx],
                              'species': Data.lines['species'][idx],
                              'ep': Data.lines['ep'][idx],
@@ -166,3 +166,19 @@ class Star:
         if x != None:
             self.model_atmosphere = x
             self.model_atmosphere_grid = grid
+
+    def get_absolute_magnitude(self, recalculate=False):
+        if hasattr(self, 'M_V') and hasattr(self, 'err_M_V') \
+           and not recalculate:
+            logger.warning('star already has M_V and err_M_V defined. '+\
+                           'Nothing changed. Use recalculate=True to overwrite')
+            return None
+        try:
+            self.M_V = self.v - 5 * np.log10(1000/self.plx) + 5.
+            self.err_M_V = np.sqrt(self.err_v**2 +\
+              (np.log10(np.exp(1))**2)*25*(self.err_plx/self.plx)**2)
+            logger.info('Absolute magnitude and error attributes '+\
+                        'added to star object')
+        except:
+            logger.warning('Could not calculate absolute magnitude. '+\
+                           'Star must have v and err_v attributes (vmag).')
