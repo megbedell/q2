@@ -26,6 +26,14 @@ class SolvePars:
         self.smooth_window_len_mv = 0
         self.smooth_window_len_r = 0
         self.smooth_window_len_logg = 0
+        
+    def alpha_adjust(self, alpha):
+        '''Adjust feh_offset using alpha-element contribution
+        using equation from Salaris et al. 1993, ApJ, 414, 580
+        '''
+        self.feh_offset = -0.04 + np.log10(0.694 * 10**alpha + 0.306)
+
+
 
 class PlotPars:
     def __init__(self, figure_format='png', directory="", make_figures=True):
@@ -150,6 +158,9 @@ def solve_one(Star, SolvePars, PlotPars=PlotPars(), isochrone_points=None, silen
                                    SolvePars.key_parameter_known)
     else:
         ips = isochrone_points
+        
+    if hasattr(Star, 'alpha'):
+        SolvePars.alpha_adjust(Star.alpha)
 
     if ips == None:
         logger.warning('Could not get any isochrone points.')

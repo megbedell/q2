@@ -376,6 +376,7 @@ sp_map = {
           'CH2' : 106.1,
           'NI'  :   7.0,
           'OI'  :   8.0,
+          'OI2' :   8.1,
           'FI'  :   9.0,
           'NaI' :  11.0,
           'MgI' :  12.0,
@@ -408,9 +409,11 @@ sp_map = {
           'BaII':  56.1,
           'LaII':  57.1,
           'CeII':  58.1,
+          'PrII':  59.1,
           'NdII':  60.1,
           'SmII':  62.1,
           'EuII':  63.1,
+          'GdII':  64.1,
           'DyII':  66.1
           }
 
@@ -443,6 +446,7 @@ tc_map = {
           'CH2'  :    40.0,
           'NI'  :    123.0,
           'OI'  :    180.0,
+          'OI2'  :   180.0,
           'FI'  :    734.0,
           'NaI' :    958.0,
           'MgI' :   1336.0,
@@ -470,15 +474,17 @@ tc_map = {
           'RbI' :    800.0,
           'SrI' :   1464.0,
           'SrII':   1464.0,
-          'YII' :   1659.0001,  # so it's not the same as Sc & Dy
+          'YII' :   1659.0001,  # so it's not the same as Sc & Dy & Gd
           'ZrII':   1741.0,
           'BaII':   1455.0,
           'LaII':   1578.0,
           'CeII':   1478.0,
+          'PrII':   1582.0001, # so it's not the same as Ti
           'NdII':   1602.0,
           'SmII':   1590.0,
           'EuII':   1356.0,
-          'DyII':   1659.0002  # so it's not the same as Sc & Y
+          'GdII':   1659.0002,  # so it's not the same as Sc & Dy & Y
+          'DyII':   1659.0003  # so it's not the same as Sc & Y & Gd
           }
 
 def gettc(species_id):

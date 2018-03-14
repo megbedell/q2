@@ -50,7 +50,7 @@ class Driver:
         f.close()
 
 
-def create_model_in(Star, file_name='model.in'):
+def create_model_in(Star, file_name='model.in', ni_override=0.0):
     """Creates a model atmosphere file for MOOG from the model_atmosphere
     attribute of a Star object.
     """
@@ -120,6 +120,8 @@ def create_model_in(Star, file_name='model.in'):
             else:
                 abund = 12.+np.log10(np.power(10, float(line[3:9]))/0.92040)+ \
                         feh
+            if species=='28' and ni_override != 0.0:
+                abund = ni_override
             abund = str('%5.2F' %abund)
             f.write(species+' '+abund+'\n')
             line = fabund.readline()

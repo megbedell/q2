@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 b_map_linear = {
 # slope correction factor and error [dex/Gyr]
-# from: Spina et al. (2016a), A&A 593, A125
+# from: Spina et al. (2016b), A&A 593, A125
           'CI'  :   (0.019,0.003),
           'CH'  :   (0.019,0.003),
           'OI'  :   (0.016,0.002),
@@ -40,6 +40,7 @@ def getb_linear(species_id):
 
 k_map_hyperbolic = {
 # [Gyr]
+# from: Spina et al. (2016b), A&A 593, A125
           'CI'  :   16.3,
           'CH'  :   16.3,
           'OI'  :   48.0,
@@ -74,6 +75,7 @@ def getk_hyperbolic(species_id):
 
 b_map_hyperbolic = {
 # [Gyr/dex]
+# from: Spina et al. (2016b), A&A 593, A125
           'CI'  :   22.8,
           'CH'  :   22.8,
           'OI'  :   45.8,
@@ -111,8 +113,7 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
     '''
     Apply GCE corrections and return adjusted abundances.
     method: 'linear' or 'hyperbolic', describes the GCE fit method used.
-       linear: from Spina et al. 2016, arXiv:1606.04842
-       hyperbolic: from Spina et al. 2016, arXiv:1606.04842
+    errors: use True if stellar parameter errors should be included
     '''
     if (Ref==None):
     	print "Ref not set; assuming it is the Sun (age = 4.6 Gyr)"
@@ -138,10 +139,13 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
         species_difab = np.array(getattr(Star, species_id)['difab'])
         species_difab = species_difab[species_difab != np.array(None)]  #remove Nones from where ref star was unavailable
         abund = np.append(abund, np.mean(species_difab))
-        try:
-            err = np.append(err, np.std(species_difab) / np.sqrt(len(species_difab) - 1) )
-        except:
-            err = np.append(err, 0.0)
+        if errors:
+            err = np.append(err, getattr(Star, species_id)['err_difab'])
+        else:
+            try:
+                err = np.append(err, np.std(species_difab) / np.sqrt(len(species_difab) - 1) )
+            except:
+                err = np.append(err, 0.0)
         
     for t in set(Tc):
         # eliminate duplicate measurements of the same element
@@ -166,7 +170,7 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
                 err_factor = 0.0
                 continue
             corr_factor = (age - Ref_age)*b
-            err_factor = (age - Ref_age)*err_b
+            err_factor = (age - Ref_age)*err_b # error from uncertainty in GCE corrections
         elif method is 'hyperbolic':
             k = getk_hyperbolic(species_id)
             b = getb_hyperbolic(species_id)
