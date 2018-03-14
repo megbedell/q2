@@ -116,8 +116,8 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
     errors: use True if stellar parameter errors should be included
     '''
     if (Ref==None):
-    	print "Ref not set; assuming it is the Sun (age = 4.6 Gyr)"
-        Ref_age = 4.6
+    	print("Ref not set; assuming it is the Sun (age = 4.6 Gyr)")
+    	Ref_age = 4.6
     if (Ref_age==0.0):
         # if Ref was set but no age given
         "Must set Ref_age keyword!"
@@ -126,10 +126,9 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
         species_codes = sorted(set(Star.linelist['species']))
         species_ids = q2.abundances.getsp_ids(species_codes)
         if not silent:
-            print '"species_ids" not provided'
-            print 'Lines found for the following species: '+\
-                  ','.join(species_ids)
-            print ''
+            print('"species_ids" not provided')
+            print('Lines found for the following species: {0}'.format(join(species_ids)))
+            print('')
     Tc = []
     abund = []
     err = []
@@ -159,13 +158,13 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
     
     for i,species_id in enumerate(species_ids):
         if not silent:
-            print "*** Begin "+species_id+":"
+            print("*** Begin {0}:".format(species_id))
         # fetch correction factors:
         if method is 'linear':
             (b, err_b) = getb_linear(species_id)
             if (b == 0.0):
                 if not silent:
-		            print "No GCE correction available."
+                    print("No GCE correction available.")
                 corr_factor = 0.0
                 err_factor = 0.0
                 continue
@@ -175,22 +174,22 @@ def correct(Star, age, species_ids=None, method='linear', Ref=None, Ref_age=0.0,
             k = getk_hyperbolic(species_id)
             b = getb_hyperbolic(species_id)
             if not np.isfinite(b):
-    	        if not silent:
-    		        print "No GCE correction available."
-                corr_factor = 0.0
+                if not silent:
+                    print("No GCE correction available.")                   
+                corr_factor = 0.0                
                 err_factor = 0.0
-    	        continue
+                continue
             corr_factor = np.sqrt((Ref_age - k)**2/b**2 + 1.0) - np.sqrt((age - k)**2/b**2 + 1.0)
             err_factor = 0.0 # no errors available (yet)
         else:
-            print "Correction method not recognized; no changes made."
+            print("Correction method not recognized; no changes made.")
             return
         
         # apply correction and error:
         abund[i] -= corr_factor
         err[i] = np.sqrt(err[i]**2 + err_factor**2)
         if not silent:
-	        print "GCE correction of {0:6.3} +/- {1:6.3} dex made.".format(-corr_factor, np.abs(err_factor))
+            print("GCE correction of {0:6.3} +/- {1:6.3} dex made.".format(-corr_factor, np.abs(err_factor)))
               
     
     return abund, err, Tc
