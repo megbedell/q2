@@ -9,7 +9,7 @@ be placed in the q2/Data folder.
 """
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg', warn=False, force=False)
 from .config import *
 from .star import *
 from . import moog, specpars, errors, abundances, gce
